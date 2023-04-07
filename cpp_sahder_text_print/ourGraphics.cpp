@@ -1,0 +1,248 @@
+#include "ourGraphics.h"
+#define STB_IMAGE_IMPLEMENTATION
+#include "stb_image.h"
+
+OGLManager::OGLManager(int pwx, int pwy, GLFWframebuffersizefun callback)
+{
+	initOGL(pwx, pwy, callback);
+}
+
+unsigned int makeTexture(string fileName)
+{
+	unsigned int tex;
+
+	glGenTextures(1, &tex);
+	glBindTexture(GL_TEXTURE_2D, tex);
+
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+	int iw, ih, nChan;
+	unsigned char *data = stbi_load(fileName.c_str(), &iw, &ih, &nChan, 0);
+
+	if (data)
+	{
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, iw, ih, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
+		glGenerateMipmap(GL_TEXTURE_2D);
+	}
+	else
+	{
+		cout << "Texture load failed " << fileName << endl;
+	}
+
+	stbi_image_free(data);
+
+	return tex;
+}
+
+bool OGLManager::initOGL(int pwx, int pwy, GLFWframebuffersizefun callback)
+{
+	glfwInit();
+	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
+	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 4);
+	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+
+	window = glfwCreateWindow(pwx, pwy, "Main Window", NULL, NULL);
+	if (window == NULL)
+	{
+		std::cout << "Failed to create GLFW window" << std::endl;
+		glfwTerminate();
+		return false;
+	}
+
+	glfwMakeContextCurrent(window);
+
+	gladLoaded = gladLoadGLLoader((GLADloadproc)glfwGetProcAddress);
+	if (!gladLoaded)
+	{
+		std::cout << "Failed to initialize GLAD" << std::endl;
+		return false;
+	}
+
+	glfwSetFramebufferSizeCallback(window, callback);
+
+	return true;
+}
+
+void OGLManager::endDraw()
+{
+	glfwSwapBuffers(window);
+	glfwPollEvents();
+}
+
+void drawOurVBO(flarr verts, int verts_block_size, GLenum objType, int vertAttrSize)
+{
+	//verts_block_size defines how many layouts
+	//are transmited:
+
+	/*
+	 3- XYZ
+	 6- XYZRGB
+	 8- XYZRGBUV
+	*/
+
+
+	//buffers
+	unsigned int VBO; //vertex buffer
+	unsigned int VAO; //vertex array
+
+	glGenBuffers(1, &VBO); //generate vertex buffer
+	glBindBuffer(GL_ARRAY_BUFFER, VBO); //assign data type to buffer
+	glBufferData(GL_ARRAY_BUFFER, sizeof(float)*verts.size(), verts.data(), GL_STATIC_DRAW);
+
+	glGenVertexArrays(1, &VAO);
+	glBindVertexArray(VAO);
+
+	if (verts_block_size >= 3)
+	{
+		glVertexAttribPointer(0, vertAttrSize, GL_FLOAT, GL_FALSE, verts_block_size * sizeof(float), (void*)0);
+		glEnableVertexAttribArray(0);
+	}
+
+	if (verts_block_size >= 6)
+	{
+		glVertexAttribPointer(1, vertAttrSize, GL_FLOAT, GL_FALSE, verts_block_size * sizeof(float), (void*)(vertAttrSize * sizeof(float)));
+		glEnableVertexAttribArray(1);
+	}
+
+	if (verts_block_size >= 8)
+	{
+		glVertexAttribPointer(2, vertAttrSize, GL_FLOAT, GL_FALSE, verts_block_size * sizeof(float), (void*)(2 * vertAttrSize * sizeof(float)));
+		glEnableVertexAttribArray(2);
+	}
+	glDrawArrays(objType, 0, verts.size() / verts_block_size);
+
+	glDeleteBuffers(1, &VBO);
+	glDeleteVertexArrays(1, &VAO);
+}
+
+void drawOurEBO(flarr verts, intarr inds, unsigned int tex, int verts_block_size)
+{
+
+	//buffers
+	unsigned int VBO; //vertex buffer
+	unsigned int EBO; //elemnt buffer
+	unsigned int VAO; //vertex array
+
+	glGenVertexArrays(1, &VAO);
+	glBindVertexArray(VAO);
+
+	glGenBuffers(1, &VBO); //generate vertex buffer
+	glBindBuffer(GL_ARRAY_BUFFER, VBO); //assign data type to buffer
+	glBufferData(GL_ARRAY_BUFFER, sizeof(float)*verts.size(), verts.data(), GL_STATIC_DRAW);
+
+	glGenBuffers(1, &EBO); //generate element buffer
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO); //assgn data type
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(unsigned int)*inds.size(), inds.data(), GL_STATIC_DRAW);
+
+	glBindVertexArray(VAO);
+
+	if (verts_block_size >= 3)
+	{
+		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, verts_block_size * sizeof(float), (void*)0);
+		glEnableVertexAttribArray(0);
+	}
+
+	if (verts_block_size >= 6)
+	{
+		glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, verts_block_size * sizeof(float), (void*)(3 * sizeof(float)));
+		glEnableVertexAttribArray(1);
+	}
+
+	if (verts_block_size >= 8)
+	{
+		glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, verts_block_size * sizeof(float), (void*)(6 * sizeof(float)));
+		glEnableVertexAttribArray(2);
+	}
+
+	glDrawElements(GL_TRIANGLES, inds.size(), GL_UNSIGNED_INT, 0);
+
+	glDeleteBuffers(1, &VBO);
+	glDeleteVertexArrays(1, &VAO);
+	glDeleteBuffers(1, &EBO);
+}
+
+
+
+int getSymbolId(char smb)
+{
+	char smbToFind = tolower(smb);
+	vector<char> symbols = symbolsList();
+	int fid = -1;
+	for (int i = 0; i < symbols.size(); i++)
+	{
+		if (smbToFind == symbols[i]) { fid = i; return fid; }
+	}
+	return fid;
+}
+
+void getSymbolCoords(int rowWidth, int smbId, float &sx, float &sy, float &sw)
+{
+	int c=0, r=0, cId=0;
+	while (cId < smbId)
+	{
+		cId++;
+		c++;
+		if (c > rowWidth-1) { c = 0; r++; }
+	}
+
+	float pw = (1.0f / (float)rowWidth);
+
+	sx = (float)c * pw;
+	sy = (float)r * pw;
+	sw = pw;
+}
+
+smbarr symbolsList()
+{
+  return { 'a','b','c','d','e','f','g','h','i','j','k','l','m','n','o','p','q','r','s','t', 'u','v','w','x','y','z','.',',','-','+','=','/','?','\'','$','#','\"','(',')','_','!',' ','1','2','3','4','5','6','7','8','9','0'};
+}
+
+void printBitmapText(float tx, float ty, float size, string txt, unsigned int fontTex)
+{
+	int l = txt.length();
+	for (int i = 0; i < l; i++)
+	{
+		char cs = txt[i];
+
+		float symX = 0, symY = 0, symW = 0;
+
+		getSymbolCoords(8,getSymbolId(cs),symX,symY,symW);
+
+		flarr letter_coords = {};
+		intarr letter_inds = {};
+
+		//vertex array
+		//1
+		letter_coords.push_back(tx + size * i); letter_coords.push_back(ty); letter_coords.push_back(0.0f); //vert coords
+		letter_coords.push_back(1.0f); letter_coords.push_back(1.0f); letter_coords.push_back(1.0f); //vert clr
+		letter_coords.push_back(symX); letter_coords.push_back(symY+symW); //tex coords
+		//2
+		letter_coords.push_back(tx + size + size * i); letter_coords.push_back(ty); letter_coords.push_back(0.0f); //vert coords
+		letter_coords.push_back(1.0f); letter_coords.push_back(1.0f); letter_coords.push_back(1.0f); //vert clr
+		letter_coords.push_back(symX + symW); letter_coords.push_back(symY + symW); //tex coords
+		//3
+		letter_coords.push_back(tx + size * i); letter_coords.push_back(ty + size); letter_coords.push_back(0.0f); //vert coords
+		letter_coords.push_back(1.0f); letter_coords.push_back(1.0f); letter_coords.push_back(1.0f); //vert clr
+		letter_coords.push_back(symX); letter_coords.push_back(symY); //tex coords
+		//4
+		letter_coords.push_back(tx + size + size * i); letter_coords.push_back(ty + size); letter_coords.push_back(0.0f); //vert coords
+		letter_coords.push_back(1.0f); letter_coords.push_back(1.0f); letter_coords.push_back(1.0f); //vert clr
+		letter_coords.push_back(symX+symW); letter_coords.push_back(symY); //tex coords
+
+		//index array
+		letter_inds.push_back(0); letter_inds.push_back(1); letter_inds.push_back(2);
+		letter_inds.push_back(1); letter_inds.push_back(2); letter_inds.push_back(3);
+
+		drawOurEBO(letter_coords, letter_inds, fontTex, 8);
+
+	}
+}
+
+float valToDevice(float dimension, float value)
+{
+	float coeff = 2.0f / dimension;
+	return (value * coeff) - 1;
+}
