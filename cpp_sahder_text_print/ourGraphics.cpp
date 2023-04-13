@@ -62,6 +62,11 @@ bool OGLManager::initOGL(int pwx, int pwy, GLFWframebuffersizefun callback)
 		return false;
 	}
 
+	glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
+
+	glEnable(GL_BLEND);
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
 	glfwSetFramebufferSizeCallback(window, callback);
 
 	return true;
@@ -165,14 +170,14 @@ void drawOurEBO(flarr verts, intarr inds, unsigned int tex, int verts_block_size
 		glEnableVertexAttribArray(2);
 	}
 
+	glBindTexture(GL_TEXTURE_2D, tex);
+
 	glDrawElements(GL_TRIANGLES, inds.size(), GL_UNSIGNED_INT, 0);
 
 	glDeleteBuffers(1, &VBO);
 	glDeleteVertexArrays(1, &VAO);
 	glDeleteBuffers(1, &EBO);
 }
-
-
 
 int getSymbolId(char smb)
 {
@@ -208,8 +213,10 @@ smbarr symbolsList()
   return { 'a','b','c','d','e','f','g','h','i','j','k','l','m','n','o','p','q','r','s','t', 'u','v','w','x','y','z','.',',','-','+','=','/','?','\'','$','#','\"','(',')','_','!',' ','1','2','3','4','5','6','7','8','9','0'};
 }
 
-void printBitmapText(float tx, float ty, float size, string txt, unsigned int fontTex)
+void printBitmapText(Shader * sh, float tx, float ty, float size, string txt, unsigned int fontTex)
 {
+	sh->use();
+
 	int l = txt.length();
 	for (int i = 0; i < l; i++)
 	{
@@ -244,6 +251,8 @@ void printBitmapText(float tx, float ty, float size, string txt, unsigned int fo
 		letter_inds.push_back(0); letter_inds.push_back(1); letter_inds.push_back(2);
 		letter_inds.push_back(1); letter_inds.push_back(2); letter_inds.push_back(3);
 
+		glBindTexture(GL_TEXTURE_2D, fontTex);
+
 		drawOurEBO(letter_coords, letter_inds, fontTex, 8);
 
 	}
@@ -255,8 +264,9 @@ float valToDevice(float dimension, float value)
 	return (value * coeff) - 1;
 }
 
-void drawChartLine(vec3arr chartPoints, glm::vec3 colour, float horScale, float vertScale, float depthScale)
+void drawChartLine(Shader * shad,vec3arr chartPoints, glm::vec3 colour, float horScale, float vertScale, float depthScale)
 {
+	shad->use();
 	drawOurVBO(pointArrToFlArr(chartPoints, colour, horScale, vertScale, depthScale), 6, GL_LINE_STRIP, 3);
 }
 
@@ -280,7 +290,8 @@ float scaleVal(float val, float scale)
 	return val * scale;
 }
 
-void drawLine(glm::vec3 p1, glm::vec3 p2, glm::vec3 colour)
+void drawLine(Shader * shad,glm::vec3 p1, glm::vec3 p2, glm::vec3 colour)
 {
+	shad->use();
 	drawOurVBO(pointArrToFlArr({ p1, p2 }, colour, 1.0f, 1.0f, 1.0f), 6, GL_LINES, 3);
 }

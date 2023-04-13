@@ -75,8 +75,8 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
-    <IncludePath>C:\CPPLIBS\glm;C:\CPPLIBS\stb_image;C:\CPPLIBS\glfw_precomp\include;C:\CPPLIBS\glad\include;$(IncludePath)</IncludePath>
-    <LibraryPath>C:\CPPLIBS\glfw_precomp\lib-vc2017;$(LibraryPath)</LibraryPath>
+    <IncludePath>C:\CPPLIBS\freetype-windows-binaries-2.13.0\include;C:\CPPLIBS\glm;C:\CPPLIBS\stb_image;C:\CPPLIBS\glfw_precomp\include;C:\CPPLIBS\glad\include;$(IncludePath)</IncludePath>
+    <LibraryPath>C:\CPPLIBS\freetype-windows-binaries-2.13.0\release static\vs2015-2022\win64;C:\CPPLIBS\glfw_precomp\lib-vc2017;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
@@ -112,7 +112,7 @@
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>glfw3.lib;opengl32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>glfw3.lib;opengl32.lib;freetype.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -157,10 +157,12 @@
     <ClCompile Include="cpp_sahder_text_print.cpp" />
     <ClCompile Include="glad.c" />
     <ClCompile Include="ourGraphics.cpp" />
+    <ClCompile Include="ourGraphicsFreeType.cpp" />
     <ClCompile Include="shadercpp.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="ourGraphics.h" />
+    <ClInclude Include="ourGraphicsFreeType.h" />
     <ClInclude Include="shader.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

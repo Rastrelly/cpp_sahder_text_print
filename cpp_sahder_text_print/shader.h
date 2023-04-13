@@ -37,6 +37,8 @@ public:
 	// ------------------------------------------------------------------------
 	void setVector4f(const std::string &name, float valuex, float valuey, float valuez, float valuew);
 	// ------------------------------------------------------------------------
+	void setVector3f(const std::string &name, float valuex, float valuey, float valuez);
+	// ------------------------------------------------------------------------
 	void setMatrix4f(const std::string &name, glm::mat4 projection);
 
 private:
