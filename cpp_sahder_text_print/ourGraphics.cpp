@@ -5,6 +5,7 @@
 OGLManager::OGLManager(int pwx, int pwy, GLFWframebuffersizefun callback)
 {
 	initOGL(pwx, pwy, callback);
+	setDefaultProjections();
 }
 
 unsigned int makeTexture(string fileName)
@@ -70,6 +71,13 @@ void OGLManager::endDraw()
 {
 	glfwSwapBuffers(window);
 	glfwPollEvents();
+}
+
+void OGLManager::updateProjectionForShader(Shader * shader)
+{
+	shader->setMatrix4f("projection", getProjection());
+	shader->setMatrix4f("view", getView());
+	shader->setMatrix4f("model", getModel());
 }
 
 void drawOurVBO(flarr verts, int verts_block_size, GLenum objType, int vertAttrSize)
@@ -245,4 +253,34 @@ float valToDevice(float dimension, float value)
 {
 	float coeff = 2.0f / dimension;
 	return (value * coeff) - 1;
+}
+
+void drawChartLine(vec3arr chartPoints, glm::vec3 colour, float horScale, float vertScale, float depthScale)
+{
+	drawOurVBO(pointArrToFlArr(chartPoints, colour, horScale, vertScale, depthScale), 6, GL_LINE_STRIP, 3);
+}
+
+flarr pointArrToFlArr(vec3arr cdata, glm::vec3 colour, float xscale, float yscale, float zscale)
+{
+	flarr dat = {};
+	for (int i = 0; i < cdata.size(); i++)
+	{
+		dat.push_back(scaleVal(cdata[i].x, xscale));
+		dat.push_back(scaleVal(cdata[i].y, yscale));
+		dat.push_back(scaleVal(cdata[i].z, zscale));
+		dat.push_back(colour.r);
+		dat.push_back(colour.g);
+		dat.push_back(colour.b);
+	}
+	return dat;
+}
+
+float scaleVal(float val, float scale)
+{
+	return val * scale;
+}
+
+void drawLine(glm::vec3 p1, glm::vec3 p2, glm::vec3 colour)
+{
+	drawOurVBO(pointArrToFlArr({ p1, p2 }, colour, 1.0f, 1.0f, 1.0f), 6, GL_LINES, 3);
 }
