@@ -83,10 +83,6 @@ void printAxisMarks(glm::vec3 ch_start, glm::vec3 ch_end, glm::vec3 aSize, glm::
 	if (osize.y == 0) nObjY = 0;
 
 	glm::vec3 chart_scales_stp;
-	if (nObjX > 0)
-	chart_scales_stp.x = (ch_end.x - ch_start.x) / (float)nObjX;
-	if (nObjY > 0)
-	chart_scales_stp.y = (ch_end.y - ch_start.y) / (float)nObjY;
 	
 	int nObj = 10;
 	
@@ -94,6 +90,8 @@ void printAxisMarks(glm::vec3 ch_start, glm::vec3 ch_end, glm::vec3 aSize, glm::
 		nObj = nObjX;
 	else
 		nObj = nObjY;
+
+	chart_scales_stp = (ch_end - ch_start) / (float)nObj;
 
 	for (int i = 0; i < nObj; i++)
 	{
@@ -105,7 +103,7 @@ void printAxisMarks(glm::vec3 ch_start, glm::vec3 ch_end, glm::vec3 aSize, glm::
 		else
 			cPX = ch_start.x;
 
-		if (nObjX > 0)
+		if (nObjY > 0)
 			float cPY = -(winy / 2.0f) + ((float)i*(winy / (float)nObj));
 		else
 			cPY = ch_start.y;
