@@ -1,4 +1,4 @@
-Compile with Visual Studio (2017 was used for this one)
+Compiled with Visual Studio (2017 was used for this one)
 
 Packages needed:
 1) GLFW (https://www.glfw.org/download.html)
