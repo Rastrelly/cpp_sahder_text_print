@@ -21,7 +21,6 @@ private:
 	FT_Library ft;
 	FT_Face face;
 public:
-	FontWorker();
+	FontWorker(string fontPath);
 	void RenderText(Shader * s, std::string text, float x, float y, float scale, glm::vec3 color);
-
 };

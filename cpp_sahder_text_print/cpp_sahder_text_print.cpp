@@ -166,7 +166,8 @@ int main()
 
 	fontTexture = makeTexture("font_map.png");
 
-	FontWorker fWork;
+	//put any ttf font you want here
+	FontWorker fWork("C:\\Windows\\Fonts\\gilsanub.ttf");
 	globFW = &fWork;
 
 	while (!glfwWindowShouldClose(ogl.window))

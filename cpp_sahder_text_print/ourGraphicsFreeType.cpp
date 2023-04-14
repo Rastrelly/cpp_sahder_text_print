@@ -1,7 +1,7 @@
 #include "ourGraphicsFreeType.h"
 
 
-FontWorker::FontWorker()
+FontWorker::FontWorker(string fontPath)
 {
 	
 	if (FT_Init_FreeType(&ft))
@@ -9,7 +9,7 @@ FontWorker::FontWorker()
 		std::cout << "ERROR::FREETYPE: Could not init FreeType Library" << std::endl;
 	}
 	
-	if (FT_New_Face(ft, "arial.ttf", 0, &face))
+	if (FT_New_Face(ft, fontPath.c_str(), 0, &face))
 	{
 		std::cout << "ERROR::FREETYPE: Failed to load font" << std::endl;
 	}
