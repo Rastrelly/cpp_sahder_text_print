@@ -8,5 +8,6 @@ Packages needed:
 3) Freetype (https://freetype.org/)
 	Use the prebuilt static for x64 (https://github.com/ubawurinna/freetype-windows-binaries/releases/tag/v2.13.0)
 4) stb image for texture loading (https://github.com/nothings/stb)
+5) GLM for math (https://github.com/g-truc/glm)
 
 Update inclusion catalogs and library catalogs for the ones where the libs were set up.
